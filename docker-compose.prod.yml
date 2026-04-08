@@ -1,0 +1,25 @@
+version: "3.9"
+
+# Production override — adds Nginx reverse proxy
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+services:
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - media_data:/media:ro
+
+  app:
+    ports: []  # Remove direct port exposure; Nginx handles it
+    environment:
+      BETTER_AUTH_URL: "${BETTER_AUTH_URL}"
+      NEXT_PUBLIC_APP_URL: "${NEXT_PUBLIC_APP_URL}"
+
+volumes:
+  media_data:
