@@ -26,6 +26,11 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Dummy DATABASE_URL so Prisma can generate the client and Next.js can
+# complete the build without a live database. Pages that query the DB
+# at build time will fail gracefully — they are all dynamic at runtime.
+ENV DATABASE_URL="postgresql://build:build@localhost:5432/build"
+
 RUN npx prisma generate
 RUN npm run build
 
