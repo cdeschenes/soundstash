@@ -1,6 +1,6 @@
 # SoundStash
 
-Self-hosted, invite-only music sharing. Upload tracks, share waveforms, leave comments.
+Self-hosted, invite-only music sharing platform with SoundCloud like features. Upload tracks and leave comments.
 
 ## Features
 
@@ -23,95 +23,70 @@ Self-hosted, invite-only music sharing. Upload tracks, share waveforms, leave co
 - **Tailwind CSS + shadcn/ui**
 - **Docker Compose**
 
-## Getting started
+## Install
 
 ### Prerequisites
 
-- Node 22+
-- Docker + Docker Compose
-- `ffmpeg` and `audiowaveform` installed locally (for dev)
+- Docker and Docker Compose
+- An SMTP server for sending invite emails
 
-### 1. Install dependencies
+### 1. Clone the repo
 
 ```bash
-npm install
+git clone https://github.com/cdeschenes/soundstash.git
+cd soundstash
 ```
 
 ### 2. Configure environment
 
 ```bash
 cp .env.example .env
-# Edit .env — set BETTER_AUTH_SECRET, DATABASE_URL, SMTP_* etc.
 ```
 
-### 3. Start database
+Edit `.env` and fill in your values:
+
+| Variable | Description |
+|---|---|
+| `BETTER_AUTH_SECRET` | Random secret, 32+ characters. Generate with `openssl rand -hex 32`. |
+| `BETTER_AUTH_URL` | Public URL of the app, e.g. `https://sound.yourdomain.com` |
+| `NEXT_PUBLIC_APP_URL` | Same as `BETTER_AUTH_URL` |
+| `SMTP_HOST` | SMTP server hostname |
+| `SMTP_PORT` | SMTP port (typically `587`) |
+| `SMTP_SECURE` | `true` for port 465, `false` for STARTTLS |
+| `SMTP_USER` | SMTP login username |
+| `SMTP_PASS` | SMTP login password |
+| `EMAIL_FROM` | From address for invite emails, e.g. `SoundStash <noreply@yourdomain.com>` |
+| `ADMIN_EMAIL` | Email address for the first admin account |
+| `ADMIN_PASSWORD` | Password for the first admin account |
+
+> `DATABASE_URL` and `MEDIA_ROOT` are set automatically by the compose file and do not need to be in `.env`.
+
+### 3. Start the stack
 
 ```bash
-docker compose up db -d
-```
-
-### 4. Run migrations and seed admin
-
-```bash
-npm run db:migrate
-npm run db:seed
-```
-
-This creates an admin account using `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `.env`.
-
-### 5. Start dev server
-
-```bash
-npm run dev
-```
-
-Visit [http://localhost:3000](http://localhost:3000) and log in with your admin credentials.
-
----
-
-## Production (Docker)
-
-```bash
-# Copy and fill in your values
-cp .env.example .env
-
-# Start everything
 docker compose up -d
+```
 
-# With Nginx reverse proxy
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+This starts three services: `db` (PostgreSQL), `app` (Next.js), and `nginx` (reverse proxy on port 80).
 
-# Run migrations inside the container
+### 4. Run migrations and seed the admin account
+
+```bash
 docker compose exec app npx prisma migrate deploy
 docker compose exec app npx tsx prisma/seed.ts
 ```
 
----
+The seed script creates the admin account using `ADMIN_EMAIL` and `ADMIN_PASSWORD` from your `.env`. Run it once on first deploy only.
 
-## Key architecture decisions
+### 5. Log in
 
-| Decision | Rationale |
-|---|---|
-| Separate `UserProfile` table | Decoupled from Better Auth's `user` table to avoid migration conflicts |
-| Fire-and-forget audio processing | Adequate for <50 users; no queue needed |
-| `UPLOADED → PROCESSING → READY \| FAILED` state machine | Enables polling UI, orphan recovery at startup |
-| Pre-generated waveform peaks | Fast page load — peaks served as static JSON, no decode on playback |
-| Nginx serves `/media/` directly | Avoids streaming audio bytes through Node in production |
-| HTTP range request support in dev media route | Required for correct seek behavior |
+Visit the URL you set in `BETTER_AUTH_URL` and log in with your admin credentials.
 
-## Media storage
+### Updates
 
-Files are stored at `MEDIA_ROOT` (default: `./media` in dev, `/media` in Docker):
-
+```bash
+docker compose pull && docker compose up -d
 ```
-media/
-  tracks/<userId>/<trackId>.mp3
-  tracks/<userId>/<trackId>_artwork.jpg
-  tracks/<userId>/<trackId>_waveform.json
-  avatars/<nanoid>_avatar.jpg
-```
-
-In production, mount this as a Docker volume backed by your NAS or persistent disk.
 
 ## Auth flow
 
@@ -120,9 +95,3 @@ In production, mount this as a Docker volume backed by your NAS or persistent di
 3. User visits `/invite/<token>`, sets display name, username, and password
 4. Account created via Better Auth; invite marked accepted
 5. User logs in at `/login`
-
-## type-check
-
-```bash
-npm run type-check
-```
