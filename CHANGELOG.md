@@ -5,6 +5,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [v1.0.1] - 2026-04-09
+
+### Added
+- **Comment editing** — users can edit their own comments inline with a pencil icon that appears on hover; Save/Cancel controls appear in place of the comment body
+- **Admin comment moderation** — new `/admin/comments` page lists all comments across every track with a delete action; linked from the admin sidebar
+- **Album art lightbox** — clicking a track's cover art opens a full-size view centered on the page with a blurred backdrop; click outside or press × to close
+- **Warm theme** — new colour scheme based on the #003049 / #D62828 / #F77F00 / #FCBF49 palette; selectable from Profile Settings alongside Light, Dark, and System
+
+### Fixed
+- Comment counter on track cards and feed remained stale after a comment was deleted — `_count.comments` now filters out soft-deleted comments
+- Admin users could not edit their own comments — the pencil icon was incorrectly hidden for any admin; now any user can edit their own comments regardless of role
+
 ## [v1.0.0] - 2026-04-07
 
 ### Added

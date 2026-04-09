@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { useSession } from "@/lib/auth-client";
 import { getMyProfile, updateProfile, uploadAvatar } from "@/server/actions/profile";
-import { Moon, Sun, Monitor } from "lucide-react";
+import { Moon, Sun, Monitor, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -169,9 +169,10 @@ export default function ProfileSettingsPage() {
           <Label>Theme</Label>
           <div className="flex gap-2 mt-2">
             {([
-              { value: "light", label: "Light", icon: Sun },
-              { value: "dark",  label: "Dark",  icon: Moon },
-              { value: "system",label: "System", icon: Monitor },
+              { value: "light",  label: "Light",  icon: Sun },
+              { value: "dark",   label: "Dark",   icon: Moon },
+              { value: "system", label: "System", icon: Monitor },
+              { value: "warm",   label: "Warm",   icon: Flame },
             ] as const).map(({ value, label, icon: Icon }) => (
               <button
                 key={value}

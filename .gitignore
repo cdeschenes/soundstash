@@ -58,3 +58,9 @@ prisma/*.db-journal
 PROJECTPLAN.md
 *.log
 dist/
+
+__pycache__/
+*.pyc
+node_modules/
+.next/
+.venv/

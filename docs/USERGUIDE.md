@@ -48,7 +48,7 @@ The track detail page has the full waveform at the top. Click anywhere on it to 
 
 <!-- screenshot: track detail page -->
 
-If the uploader added cover artwork, it appears next to the waveform. Not all tracks have artwork.
+If the uploader added cover artwork, it appears next to the waveform. Not all tracks have artwork. Click the artwork thumbnail to view a full-size version. Click outside it or press × to close.
 
 ---
 
@@ -108,7 +108,9 @@ Comments are on each track's detail page, below the waveform.
 
 **Posting a comment.** Click **Post comment**. A text box appears. Type your comment (up to 1,000 characters) and click **Post comment** again to submit. Click **Cancel** to close the box without posting.
 
-**Deleting a comment.** You can delete your own comments. Admins can delete any comment.
+**Editing a comment.** Hover over a comment you posted and click the pencil icon that appears. The comment text becomes an editable box. Make your changes and click **Save**, or click **Cancel** to discard them. Only you can edit your own comments.
+
+**Deleting a comment.** Hover over your comment and click the trash icon. Admins can delete any comment.
 
 ---
 
@@ -145,7 +147,7 @@ Click **Change avatar** to upload a new profile picture. JPEG, PNG, and WebP are
 
 ### Theme
 
-Choose between **Light**, **Dark**, and **System**. System follows your operating system setting. The change takes effect immediately — no save button needed.
+Choose between **Light**, **Dark**, **System**, and **Warm**. System follows your operating system setting. Warm is a dark theme using a navy and orange colour palette. The change takes effect immediately — no save button needed.
 
 ---
 
@@ -153,7 +155,7 @@ Choose between **Light**, **Dark**, and **System**. System follows your operatin
 
 > This section is for admins only. Regular members do not see the Admin panel.
 
-Access the admin panel from the top bar. It has four sections: Dashboard, Users, Invites, and Tracks.
+Access the admin panel from the top bar. It has five sections: Dashboard, Users, Invites, Tracks, and Comments.
 
 <!-- screenshot: admin panel navigation -->
 
@@ -192,3 +194,11 @@ Go to **Admin > Tracks**.
 This shows all tracks on the platform, including tracks from every member. You have the same edit and delete controls here that members have on their own tracks — hover a track to see the pencil and trash icons.
 
 Use this to remove tracks that violate community rules or to help a member fix metadata they can't edit themselves.
+
+### Moderating comments
+
+Go to **Admin > Comments**.
+
+This lists every comment on the platform — showing the track it belongs to, who posted it, and when. Click the trash icon in a row to delete a comment permanently. You'll be asked to confirm before anything is removed.
+
+Use this to remove comments that are off-topic, spam, or otherwise inappropriate.

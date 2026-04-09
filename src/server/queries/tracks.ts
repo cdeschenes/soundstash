@@ -11,7 +11,10 @@ const trackWithUserInclude = {
     orderBy: { sortOrder: "asc" as const },
   },
   _count: {
-    select: { comments: true, plays: true },
+    select: {
+      comments: { where: { deletedAt: null } },
+      plays: true,
+    },
   },
 };
 

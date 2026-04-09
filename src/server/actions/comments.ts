@@ -43,6 +43,36 @@ export async function addComment(
   return { commentId: comment.id };
 }
 
+export async function updateComment(
+  commentId: string,
+  body: string
+): Promise<{ error?: string }> {
+  const session = await auth.api.getSession({ headers: await headers() });
+
+  if (!session) return { error: "Unauthorized" };
+
+  const parsed = z.string().min(1).max(1000).safeParse(body);
+  if (!parsed.success) return { error: "Comment must be between 1 and 1000 characters" };
+
+  const comment = await db.comment.findUnique({
+    where: { id: commentId },
+    include: { track: { select: { slug: true } } },
+  });
+
+  if (!comment || comment.deletedAt) return { error: "Comment not found" };
+
+  if (comment.userId !== session.user.id) return { error: "Forbidden" };
+
+  await db.comment.update({
+    where: { id: commentId },
+    data: { body: parsed.data },
+  });
+
+  revalidatePath(`/track/${comment.track.slug}`);
+
+  return {};
+}
+
 export async function deleteComment(
   commentId: string
 ): Promise<{ error?: string }> {

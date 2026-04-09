@@ -26,6 +26,7 @@ export default async function AdminLayout({
     { href: "/admin/invites", label: "Invites" },
     { href: "/admin/users", label: "Users" },
     { href: "/admin/tracks", label: "Tracks" },
+    { href: "/admin/comments", label: "Comments" },
   ];
 
   return (

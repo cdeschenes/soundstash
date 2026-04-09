@@ -61,6 +61,36 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
+
+  /* Warm theme — #003049 / #D62828 / #F77F00 / #FCBF49 */
+  .warm {
+    --background: 201 100% 8%;
+    --surface: 201 80% 13%;
+    --surface-2: 201 60% 19%;
+    --foreground: 40 90% 88%;
+    --card: 201 100% 8%;
+    --card-foreground: 40 90% 88%;
+    --popover: 201 80% 13%;
+    --popover-foreground: 40 90% 88%;
+    --primary: 31 100% 48%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 201 60% 19%;
+    --secondary-foreground: 40 90% 88%;
+    --muted: 201 60% 19%;
+    --muted-foreground: 201 30% 60%;
+    --accent: 31 100% 48%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 69% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 201 50% 22%;
+    --input: 201 50% 22%;
+    --ring: 31 100% 48%;
+    --chart-1: 31 100% 48%;
+    --chart-2: 40 97% 64%;
+    --chart-3: 0 69% 50%;
+    --chart-4: 201 100% 35%;
+    --chart-5: 20 90% 55%;
+  }
 }
 
 @layer base {
