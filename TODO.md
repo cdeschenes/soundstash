@@ -10,6 +10,8 @@
 
 Sorted easiest to hardest.
 
+- [ ] Wire up play counting — call `/api/plays` at 80% playback threshold in WaveformPlayer (currently the endpoint exists but is never called); deduplicate so one listen session only counts once per track
+- [ ] Show play count on the track bar — move "X plays" to a small, unobtrusive position (bottom-right corner of the card) that doesn't compete with the waveform; update in real time after a play is recorded
 - [ ] Secure media files — enable nginx `auth_request` so media paths are not publicly accessible without a session
 - [ ] Rate limiting on the upload endpoint
 - [ ] Expose TrackLink fields in the upload and edit forms (external links per track)
