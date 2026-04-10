@@ -59,7 +59,9 @@ COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 # Prisma CLI — needed to run migrations at startup
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
-COPY --from=builder /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
+# Symlink so __dirname resolves to the prisma package (where .wasm files live)
+RUN mkdir -p /app/node_modules/.bin && \
+    ln -sf /app/node_modules/prisma/build/index.js /app/node_modules/.bin/prisma
 
 # Startup entrypoint
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
