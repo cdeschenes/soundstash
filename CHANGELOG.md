@@ -5,6 +5,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [v1.0.2] - 2026-04-10
+
+### Added
+- **Play counting** — listening past 80% of a track records a play; the counter updates in real time on the card without a page reload; one play per listen session (no double-counting on scrub)
+- **Play count badge** — play count moved to a small, unobtrusive position in the bottom-right corner of each track card so it doesn't compete with the waveform
+- **External links on tracks** — upload and edit forms now include a Links section; add as many label + URL pairs as you want; they appear on the track detail page under "Links"
+- **Media file protection** — audio and artwork files are no longer publicly accessible; nginx now requires a valid session before serving any `/media/` path
+- **Upload rate limiting** — the upload endpoint now enforces a limit of 10 uploads per hour per IP address; returns 429 with a clear message when exceeded
+
+### Changed
+- Data directories (`media_data/`, `postgres_data/`) are now bind-mounted into the project folder instead of Docker named volumes, making backups and inspection straightforward
+- nginx port changed from 80 to 8089 in `docker-compose.yml`; edit that file directly to use a different host port
+- `.env.example` reorganised into labelled sections with inline guidance; placeholder credentials updated to match the Docker defaults; `DATABASE_URL` note clarifies it is for local dev only
+
 ## [v1.0.1] - 2026-04-09
 
 ### Added

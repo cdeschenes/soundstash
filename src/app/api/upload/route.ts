@@ -15,6 +15,26 @@ export const config = {
   api: { bodyParser: false },
 };
 
+const uploadLimits = new Map<string, { count: number; resetAt: number }>();
+const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+const RATE_MAX = 10; // 10 uploads per hour per IP
+
+function checkRateLimit(request: NextRequest): boolean {
+  const ip =
+    request.headers.get("x-real-ip") ??
+    request.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
+    "unknown";
+  const now = Date.now();
+  const entry = uploadLimits.get(ip);
+  if (!entry || now >= entry.resetAt) {
+    uploadLimits.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS });
+    return true;
+  }
+  if (entry.count >= RATE_MAX) return false;
+  entry.count++;
+  return true;
+}
+
 const ALLOWED_AUDIO_TYPES = [
   "audio/mpeg",
   "audio/mp3",
@@ -36,6 +56,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  if (!checkRateLimit(request)) {
+    return NextResponse.json(
+      { error: "Too many uploads. Try again later." },
+      { status: 429 }
+    );
+  }
+
   const formData = await request.formData();
   const audioFile = formData.get("audio");
   const artworkFile = formData.get("artwork");
@@ -44,6 +71,9 @@ export async function POST(request: NextRequest) {
   const genre = formData.get("genre")?.toString() ?? "";
   const tagsRaw = formData.get("tags")?.toString() ?? "";
   const isPublic = formData.get("isPublic") !== "false";
+  const linksRaw = formData.get("links")?.toString() ?? "[]";
+  let links: { label: string; url: string }[] = [];
+  try { links = JSON.parse(linksRaw); } catch { links = []; }
 
   if (!(audioFile instanceof File)) {
     return NextResponse.json({ error: "No audio file" }, { status: 400 });
@@ -108,6 +138,19 @@ export async function POST(request: NextRequest) {
       mimeType: audioFile.type,
     },
   });
+
+  // Create track links if provided
+  const validLinks = links.filter((l) => l.label?.trim() && l.url?.trim());
+  if (validLinks.length > 0) {
+    await db.trackLink.createMany({
+      data: validLinks.map((link, i) => ({
+        trackId,
+        label: link.label.trim(),
+        url: link.url.trim(),
+        sortOrder: i,
+      })),
+    });
+  }
 
   // Fire-and-forget processing
   void (async () => {

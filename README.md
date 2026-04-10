@@ -1,10 +1,10 @@
 # SoundStash
 
-Self-hosted, invite-only music sharing platform. Members upload tracks, listen with a waveform player, and leave comments. Access is controlled entirely by admin-issued invites.
+Think SoundCloud, but private and self-hosted. SoundStash is an invite-only music sharing platform where members upload and stream their own original songs, discover music from others in the community, and leave comments. Access is gated entirely by admin-issued invites — no public sign-ups, no strangers.
 
 ## Features
 
-- Feed with inline waveform playback and continuous audio while browsing
+- Feed with continuous music streaming and interactive waveforms — audio keeps playing as you browse
 - Track upload: MP3, FLAC, WAV, M4A, OGG, Opus, up to 500 MB
 - Cover artwork with full-size lightbox view
 - Track editing (title, description, genre, tags, visibility, artwork) and deletion
@@ -41,17 +41,17 @@ Edit `.env`. Required values are marked below.
 docker compose up -d
 ```
 
-Three services start: `db` (PostgreSQL 16), `app` (Next.js), and `nginx` (port 80).
+Three services start: `db` (PostgreSQL 16), `app` (Next.js), and `nginx`. Data is stored in `./media_data` and `./postgres_data` inside the project folder — both are created automatically on first run.
 
 On first boot, the app container automatically pushes the database schema and creates the admin account from `ADMIN_EMAIL` and `ADMIN_PASSWORD`. No manual migration step needed.
 
 **4. Log in**
 
-Visit `http://<your-host>` and sign in with your admin credentials. From there, go to Admin > Invites to start adding members.
+Visit `http://<your-host>:<port>` and sign in with your admin credentials. From there, go to **Admin > Invites** to start adding members.
 
 ## Environment variables
 
-`DATABASE_URL` and `MEDIA_ROOT` are set by `docker-compose.yml` and must not be set in `.env`.
+`DATABASE_URL` and `MEDIA_ROOT` are set internally by `docker-compose.yml` for the app container. Don't set them in `.env` — if you see `DATABASE_URL` in `.env.example`, that entry is for local development only and has no effect on a Docker install.
 
 | Variable | Required | Description |
 |---|---|---|
@@ -78,16 +78,16 @@ docker compose pull && docker compose up -d
 
 The entrypoint runs `prisma db push` on every startup, so schema changes apply automatically.
 
-## Default port
+## Changing the port
 
-nginx listens on port 80. To use a different host port, add a `docker-compose.override.yml`:
+The host port is set directly in `docker-compose.yml` under the `nginx` service:
 
 ```yaml
-services:
-  nginx:
-    ports:
-      - "8080:80"
+ports:
+  - "8089:80"
 ```
+
+Change `8089` to any available port on your host, then restart with `docker compose up -d`.
 
 ## Auth flow
 

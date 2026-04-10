@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTheme } from "next-themes";
 import Image from "next/image";
@@ -40,6 +40,9 @@ export function TrackBarPlayer({
     track.durationMs ? track.durationMs / 1000 : 0
   );
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [localPlayCount, setLocalPlayCount] = useState(track.playCount);
+  const playCountedRef = useRef(false);
+  const durationRef = useRef(track.durationMs ? track.durationMs / 1000 : 0);
 
   const isThisPlaying =
     nowPlaying?.trackId === track.id && isPlaying;
@@ -66,7 +69,7 @@ export function TrackBarPlayer({
     <>
       <div
         className={cn(
-          "group flex items-center gap-4 bg-surface border border-border rounded-lg hover:border-border transition-colors",
+          "relative group flex items-center gap-4 bg-surface border border-border rounded-lg hover:border-border transition-colors",
           variant === "feed" ? "p-3" : "p-5"
         )}
       >
@@ -141,8 +144,20 @@ export function TrackBarPlayer({
               audioPath={track.audioPath}
               waveformPath={track.waveformPath}
               isPlaying={isThisPlaying && nowPlaying?.trackId === track.id}
-              onReady={(d) => setDuration(d)}
-              onTimeUpdate={(t) => setCurrentTime(t)}
+              onReady={(d) => { setDuration(d); durationRef.current = d; }}
+              onTimeUpdate={(t) => {
+                setCurrentTime(t);
+                if (!playCountedRef.current && durationRef.current > 0 && t >= durationRef.current * 0.8) {
+                  playCountedRef.current = true;
+                  fetch("/api/plays", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ trackId: track.id }),
+                  })
+                    .then(() => setLocalPlayCount((c) => c + 1))
+                    .catch(() => {});
+                }
+              }}
               height={variant === "feed" ? 40 : 64}
               waveColor={waveColor}
               progressColor={progressColor}
@@ -166,7 +181,6 @@ export function TrackBarPlayer({
               : formatDuration((track.durationMs ?? duration * 1000))}
           </div>
           <div className="text-xs text-muted-foreground flex gap-2 justify-end">
-            <span>{track.playCount} plays</span>
             <span>{track._count.comments} comments</span>
           </div>
           {track.tags.length > 0 && (
@@ -196,12 +210,18 @@ export function TrackBarPlayer({
                   tags: track.tags,
                   isPublic: track.isPublic,
                   artworkPath: track.artworkPath,
+                  links: track.links.map((l) => ({ label: l.label, url: l.url })),
                 }}
                 afterDelete={variant === "page" ? "redirect" : "refresh"}
               />
             </div>
           )}
         </div>
+
+        {/* Play count badge */}
+        <span className="absolute bottom-1.5 right-3 text-xs text-muted-foreground/60 tabular-nums pointer-events-none select-none">
+          {localPlayCount} plays
+        </span>
       </div>
 
       {/* Artwork lightbox */}

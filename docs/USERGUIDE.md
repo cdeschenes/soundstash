@@ -61,9 +61,11 @@ Click **Upload** in the top bar to open the upload page.
 | Genre | No | One genre, e.g. "Electronic" |
 | Tags | No | Comma-separated, e.g. `ambient, lo-fi, chill` |
 
-**Step 3: add artwork (optional).** Click **Add artwork** to pick an image file. A preview appears immediately. JPEG, PNG, and WebP are accepted. Click **Remove** to clear it before uploading.
+**Step 3: add links (optional).** Click **Add link** to attach an external URL to the track — for example, a Bandcamp page, SoundCloud link, or lyrics sheet. Enter a short label and the full URL. Add as many as you need; remove any with the × button.
 
-**Step 4: upload.** Click **Upload Track**. The button shows "Uploading..." while the file transfers, then "Processing waveform..." while the server generates the audio waveform. When it finishes, you land on the track page.
+**Step 4: add artwork (optional).** Click **Add artwork** to pick an image file. A preview appears immediately. JPEG, PNG, and WebP are accepted. Click **Remove** to clear it before uploading.
+
+**Step 5: upload.** Click **Upload Track**. The button shows "Uploading..." while the file transfers, then "Processing waveform..." while the server generates the audio waveform. When it finishes, you land on the track page.
 
 If processing fails, you'll see a notice that the upload was saved but may not play correctly. The track still appears in your profile.
 
@@ -81,6 +83,7 @@ Click the pencil to open the edit dialog. You can change:
 - Description
 - Genre
 - Tags (comma-separated)
+- Links — add, edit, or remove external URLs attached to the track
 - Cover artwork (click **Change artwork** to pick a new file)
 - Visibility — uncheck **Public** to hide the track from the feed. It stays visible on your profile to you only.
 

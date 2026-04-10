@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ImagePlus, X } from "lucide-react";
+import { ImagePlus, X, Plus } from "lucide-react";
 import { UploadDropzone } from "@/components/upload/UploadDropzone";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,7 @@ export function UploadForm() {
   const [description, setDescription] = useState("");
   const [genre, setGenre] = useState("");
   const [tags, setTags] = useState("");
+  const [links, setLinks] = useState<{ label: string; url: string }[]>([]);
   const [status, setStatus] = useState<UploadStatus>("idle");
   const [trackId, setTrackId] = useState<string | null>(null);
 
@@ -58,6 +59,7 @@ export function UploadForm() {
     formData.append("description", description.trim());
     formData.append("genre", genre.trim());
     formData.append("tags", tags);
+    formData.append("links", JSON.stringify(links));
     if (artworkFile) formData.append("artwork", artworkFile);
 
     try {
@@ -145,6 +147,45 @@ export function UploadForm() {
               placeholder="ambient, lo-fi, chill"
               className="mt-1"
             />
+          </div>
+        </div>
+
+        {/* Links */}
+        <div>
+          <Label>Links <span className="text-muted-foreground font-normal">(optional)</span></Label>
+          <div className="mt-2 space-y-2">
+            {links.map((link, i) => (
+              <div key={i} className="flex gap-2">
+                <Input
+                  placeholder="Label (e.g. Bandcamp)"
+                  value={link.label}
+                  onChange={(e) => setLinks(links.map((l, j) => j === i ? { ...l, label: e.target.value } : l))}
+                  className="w-40 flex-shrink-0"
+                />
+                <Input
+                  placeholder="https://…"
+                  value={link.url}
+                  type="url"
+                  onChange={(e) => setLinks(links.map((l, j) => j === i ? { ...l, url: e.target.value } : l))}
+                />
+                <button
+                  type="button"
+                  onClick={() => setLinks(links.filter((_, j) => j !== i))}
+                  className="flex-shrink-0 text-muted-foreground hover:text-red-500 transition-colors"
+                  aria-label="Remove link"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => setLinks([...links, { label: "", url: "" }])}
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Add link
+            </button>
           </div>
         </div>
 

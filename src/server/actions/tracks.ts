@@ -73,6 +73,43 @@ export async function updateTrack(
   return { slug: updateData.slug ?? track.slug };
 }
 
+export async function updateTrackLinks(
+  trackId: string,
+  links: { label: string; url: string }[]
+): Promise<{ error?: string }> {
+  const session = await auth.api.getSession({ headers: await headers() });
+
+  if (!session) return { error: "Unauthorized" };
+
+  const track = await db.track.findUnique({ where: { id: trackId } });
+
+  if (!track) return { error: "Track not found" };
+
+  const isOwner = track.userId === session.user.id;
+  const isAdmin = session.user.role === "admin";
+  if (!isOwner && !isAdmin) return { error: "Forbidden" };
+
+  const validLinks = links.filter((l) => l.label.trim() && l.url.trim());
+
+  await db.trackLink.deleteMany({ where: { trackId } });
+
+  if (validLinks.length > 0) {
+    await db.trackLink.createMany({
+      data: validLinks.map((link, i) => ({
+        trackId,
+        label: link.label.trim(),
+        url: link.url.trim(),
+        sortOrder: i,
+      })),
+    });
+  }
+
+  revalidatePath("/feed");
+  revalidatePath(`/track/${track.slug}`);
+
+  return {};
+}
+
 export async function updateTrackArtwork(
   trackId: string,
   formData: FormData

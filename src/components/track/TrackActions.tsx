@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2, Pencil } from "lucide-react";
+import { Trash2, Pencil, Plus, X } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,7 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
-import { deleteTrack, updateTrack, updateTrackArtwork } from "@/server/actions/tracks";
+import { deleteTrack, updateTrack, updateTrackArtwork, updateTrackLinks } from "@/server/actions/tracks";
 import { artworkUrl } from "@/lib/utils";
 
 interface TrackActionsProps {
@@ -30,6 +30,7 @@ interface TrackActionsProps {
     tags: string[];
     isPublic: boolean;
     artworkPath: string | null;
+    links: { label: string; url: string }[];
   };
   afterDelete?: "redirect" | "refresh";
 }
@@ -51,6 +52,7 @@ export function TrackActions({
   const [genre, setGenre] = useState(initialData.genre ?? "");
   const [tags, setTags] = useState(initialData.tags.join(", "));
   const [isPublic, setIsPublic] = useState(initialData.isPublic);
+  const [links, setLinks] = useState<{ label: string; url: string }[]>(initialData.links);
   const [artworkFile, setArtworkFile] = useState<File | null>(null);
   const [artworkPreview, setArtworkPreview] = useState<string | null>(artworkUrl(initialData.artworkPath));
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -95,14 +97,22 @@ export function TrackActions({
       }
     }
 
-    const result = await updateTrack(trackId, {
-      title: title.trim(),
-      description: description.trim() || undefined,
-      genre: genre.trim() || undefined,
-      tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
-      isPublic,
-    });
+    const [result, linksResult] = await Promise.all([
+      updateTrack(trackId, {
+        title: title.trim(),
+        description: description.trim() || undefined,
+        genre: genre.trim() || undefined,
+        tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
+        isPublic,
+      }),
+      updateTrackLinks(trackId, links),
+    ]);
     setSaving(false);
+
+    if (linksResult.error) {
+      toast.error(linksResult.error);
+      return;
+    }
     if (result.error) {
       toast.error(result.error);
       return;
@@ -198,6 +208,43 @@ export function TrackActions({
                 onChange={(e) => setTags(e.target.value)}
                 placeholder="ambient, electronic, lo-fi"
               />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Links</Label>
+              <div className="space-y-2">
+                {links.map((link, i) => (
+                  <div key={i} className="flex gap-2">
+                    <Input
+                      placeholder="Label (e.g. Bandcamp)"
+                      value={link.label}
+                      onChange={(e) => setLinks(links.map((l, j) => j === i ? { ...l, label: e.target.value } : l))}
+                      className="w-36 flex-shrink-0"
+                    />
+                    <Input
+                      placeholder="https://…"
+                      value={link.url}
+                      type="url"
+                      onChange={(e) => setLinks(links.map((l, j) => j === i ? { ...l, url: e.target.value } : l))}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setLinks(links.filter((_, j) => j !== i))}
+                      className="flex-shrink-0 text-muted-foreground hover:text-red-500 transition-colors"
+                      aria-label="Remove link"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setLinks([...links, { label: "", url: "" }])}
+                  className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Add link
+                </button>
+              </div>
             </div>
             <div className="space-y-1.5">
               <Label>Artwork</Label>
