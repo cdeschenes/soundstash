@@ -1,97 +1,104 @@
 # SoundStash
 
-Self-hosted, invite-only music sharing platform with SoundCloud like features. Upload tracks and leave comments.
+Self-hosted, invite-only music sharing platform. Members upload tracks, listen with a waveform player, and leave comments. Access is controlled entirely by admin-issued invites.
 
 ## Features
 
-- **Feed** — live waveform playback without leaving the page; continuous audio as you browse
-- **Upload** — drag-and-drop audio (MP3, FLAC, WAV, M4A, OGG, Opus) with cover artwork, genre, and tags
-- **Track management** — owners can edit title, description, genre, tags, visibility, and artwork; delete anytime
-- **Admin panel** — manage all users, tracks, invites; admins can edit or delete any track
-- **Comments** — per-track threaded comments with collapsible post form
-- **Profiles** — display name, bio, location, website, avatar
-- **Themes** — Light, Dark, and System theme options per user
-- **Invite-only** — all new members join via admin-issued invite links
+- Feed with inline waveform playback and continuous audio while browsing
+- Track upload: MP3, FLAC, WAV, M4A, OGG, Opus, up to 500 MB
+- Cover artwork with full-size lightbox view
+- Track editing (title, description, genre, tags, visibility, artwork) and deletion
+- Per-track comments with inline editing
+- User profiles with avatar, bio, location, and website
+- Themes: Light, Dark, System, and Warm
+- Admin panel: Dashboard, Invites, Users, Tracks, Comments
 
-## Stack
-
-- **Next.js 15** (App Router, TypeScript)
-- **PostgreSQL + Prisma**
-- **Better Auth** — email/password, admin plugin
-- **wavesurfer.js** — waveform rendering with pre-generated peaks
-- **FFmpeg + audiowaveform** — metadata extraction + peak generation
-- **Tailwind CSS + shadcn/ui**
-- **Docker Compose**
-
-## Install
-
-### Prerequisites
+## Requirements
 
 - Docker and Docker Compose
-- An SMTP server for sending invite emails
+- An SMTP server (required to send invite emails)
 
-### 1. Clone the repo
+## Quick start
+
+**1. Clone the repo**
 
 ```bash
 git clone https://github.com/cdeschenes/soundstash.git
 cd soundstash
 ```
 
-### 2. Configure environment
+**2. Create your `.env`**
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` and fill in your values:
+Edit `.env`. Required values are marked below.
 
-| Variable | Description |
-|---|---|
-| `BETTER_AUTH_SECRET` | Random secret, 32+ characters. Generate with `openssl rand -hex 32`. |
-| `BETTER_AUTH_URL` | Public URL of the app, e.g. `https://sound.yourdomain.com` |
-| `NEXT_PUBLIC_APP_URL` | Same as `BETTER_AUTH_URL` |
-| `SMTP_HOST` | SMTP server hostname |
-| `SMTP_PORT` | SMTP port (typically `587`) |
-| `SMTP_SECURE` | `true` for port 465, `false` for STARTTLS |
-| `SMTP_USER` | SMTP login username |
-| `SMTP_PASS` | SMTP login password |
-| `EMAIL_FROM` | From address for invite emails, e.g. `SoundStash <noreply@yourdomain.com>` |
-| `ADMIN_EMAIL` | Email address for the first admin account |
-| `ADMIN_PASSWORD` | Password for the first admin account |
-
-> `DATABASE_URL` and `MEDIA_ROOT` are set automatically by the compose file and do not need to be in `.env`.
-
-### 3. Start the stack
+**3. Start the stack**
 
 ```bash
 docker compose up -d
 ```
 
-This starts three services: `db` (PostgreSQL), `app` (Next.js), and `nginx` (reverse proxy on port 80).
+Three services start: `db` (PostgreSQL 16), `app` (Next.js), and `nginx` (port 80).
 
-### 4. Run migrations and seed the admin account
+On first boot, the app container automatically pushes the database schema and creates the admin account from `ADMIN_EMAIL` and `ADMIN_PASSWORD`. No manual migration step needed.
 
-```bash
-docker compose exec app npx prisma migrate deploy
-docker compose exec app npx tsx prisma/seed.ts
-```
+**4. Log in**
 
-The seed script creates the admin account using `ADMIN_EMAIL` and `ADMIN_PASSWORD` from your `.env`. Run it once on first deploy only.
+Visit `http://<your-host>` and sign in with your admin credentials. From there, go to Admin > Invites to start adding members.
 
-### 5. Log in
+## Environment variables
 
-Visit the URL you set in `BETTER_AUTH_URL` and log in with your admin credentials.
+`DATABASE_URL` and `MEDIA_ROOT` are set by `docker-compose.yml` and must not be set in `.env`.
 
-### Updates
+| Variable | Required | Description |
+|---|---|---|
+| `BETTER_AUTH_SECRET` | Yes | Random secret, 32+ characters. Generate with `openssl rand -hex 32`. |
+| `BETTER_AUTH_URL` | Yes | Public URL of the app, e.g. `https://sound.yourdomain.com` |
+| `NEXT_PUBLIC_APP_URL` | Yes | Same value as `BETTER_AUTH_URL` |
+| `ADMIN_EMAIL` | Yes | Email for the first admin account (created on first boot) |
+| `ADMIN_PASSWORD` | Yes | Password for the first admin account |
+| `SMTP_HOST` | Yes* | SMTP server hostname |
+| `SMTP_USER` | Yes* | SMTP login username |
+| `SMTP_PASS` | Yes* | SMTP login password |
+| `EMAIL_FROM` | Yes* | From address for invite emails, e.g. `SoundStash <noreply@yourdomain.com>` |
+| `SMTP_PORT` | No | SMTP port. Defaults to `587`. |
+| `SMTP_SECURE` | No | Set to `true` for port 465, `false` for STARTTLS. Defaults to `false`. |
+| `APP_NAME` | No | App name used in email subjects. Defaults to `SoundStash`. |
+
+*SMTP variables are optional in the sense that the app will start without them, but invites cannot be sent until they are configured.
+
+## Upgrading
 
 ```bash
 docker compose pull && docker compose up -d
 ```
 
+The entrypoint runs `prisma db push` on every startup, so schema changes apply automatically.
+
+## Default port
+
+nginx listens on port 80. To use a different host port, add a `docker-compose.override.yml`:
+
+```yaml
+services:
+  nginx:
+    ports:
+      - "8080:80"
+```
+
 ## Auth flow
 
-1. Admin creates invite at `/admin/invites`
-2. System emails invite link to `user@example.com`
-3. User visits `/invite/<token>`, sets display name, username, and password
-4. Account created via Better Auth; invite marked accepted
-5. User logs in at `/login`
+1. Admin creates an invite at Admin > Invites
+2. An email goes to the invitee with a unique sign-up link
+3. The invitee visits `/invite/<token>` and sets their display name, username, and password
+4. The account is created and the invite is marked accepted
+5. The user logs in at `/login`
+
+## Docker image
+
+```
+ghcr.io/cdeschenes/soundstash:main
+```
