@@ -34,6 +34,13 @@ ENV DATABASE_URL="postgresql://build:build@localhost:5432/build"
 RUN npx prisma generate
 RUN npm run build
 
+# Compile seed script to plain JS so it can run in the runner without tsx
+RUN node_modules/.bin/esbuild prisma/seed.ts \
+    --bundle \
+    --platform=node \
+    --packages=external \
+    --outfile=prisma/seed.js
+
 # ─── Runner ───────────────────────────────────────────────────────────────────
 FROM base AS runner
 WORKDIR /app
@@ -50,8 +57,16 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
-# Create media directory
-RUN mkdir -p /media && chown nextjs:nodejs /media
+# Prisma CLI — needed to run migrations at startup
+COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
+
+# Startup entrypoint
+COPY docker-entrypoint.sh ./docker-entrypoint.sh
+
+# Create media directory and fix permissions
+RUN mkdir -p /media && chown nextjs:nodejs /media && \
+    chmod +x docker-entrypoint.sh
 
 USER nextjs
 
@@ -60,4 +75,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+CMD ["./docker-entrypoint.sh"]
