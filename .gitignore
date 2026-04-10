@@ -60,6 +60,7 @@ docker-compose.override.yml
 # additional
 .env.*
 *.env
+!.env.example
 PROJECTPLAN.md
 *.log
 dist/
