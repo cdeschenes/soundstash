@@ -1,8 +1,8 @@
 #!/bin/sh
 set -e
 
-echo "[entrypoint] Running database migrations..."
-node_modules/.bin/prisma migrate deploy
+echo "[entrypoint] Pushing database schema..."
+node_modules/.bin/prisma db push --skip-generate
 
 echo "[entrypoint] Running seed (skipped if admin already exists)..."
 node prisma/seed.js || echo "[entrypoint] Seed skipped or already complete."

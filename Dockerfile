@@ -34,7 +34,7 @@ ENV DATABASE_URL="postgresql://build:build@localhost:5432/build"
 RUN npx prisma generate
 RUN npm run build
 
-# Compile seed script to plain JS so it can run in the runner without tsx
+# Compile seed script to JS, keeping node_modules external (Prisma needs its native binary)
 RUN node_modules/.bin/esbuild prisma/seed.ts \
     --bundle \
     --platform=node \
@@ -54,20 +54,20 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
+
+# 1. Copy full node_modules from deps stage (includes effect + all CLI deps)
+COPY --from=deps /app/node_modules ./node_modules
+
+# 2. Overwrite with builder's generated Prisma client (produced by prisma generate)
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-
-# Prisma CLI — needed to run migrations at startup
-COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
-# Symlink so __dirname resolves to the prisma package (where .wasm files live)
-RUN mkdir -p /app/node_modules/.bin && \
-    ln -sf /app/node_modules/prisma/build/index.js /app/node_modules/.bin/prisma
 
 # Startup entrypoint
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
 
-# Create media directory and fix permissions
-RUN mkdir -p /media && chown nextjs:nodejs /media && \
+# Create media directory, fix all permissions
+RUN mkdir -p /media && \
+    chown -R nextjs:nodejs /media /app/prisma /app/node_modules/.prisma && \
     chmod +x docker-entrypoint.sh
 
 USER nextjs
