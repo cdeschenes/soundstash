@@ -8,10 +8,12 @@
 
 ## Known Gaps
 
-- [ ] Add track search and tag/genre filtering to the feed
-- [ ] Add pagination UI to the feed and admin list pages
-- [ ] Expose TrackLink fields in the upload and edit forms (external links per track)
+Sorted easiest to hardest.
+
 - [ ] Secure media files — enable nginx `auth_request` so media paths are not publicly accessible without a session
-- [ ] Add unit/integration tests (currently only Playwright e2e smoke tests exist)
-- [ ] Add in-app notifications (e.g. new comments on your tracks)
 - [ ] Rate limiting on the upload endpoint
+- [ ] Expose TrackLink fields in the upload and edit forms (external links per track)
+- [ ] Add pagination UI to the feed and admin list pages
+- [ ] Add unit/integration tests (currently only Playwright e2e smoke tests exist)
+- [ ] Add track search and tag/genre filtering to the feed
+- [ ] Add in-app notifications (e.g. new comments on your tracks)
