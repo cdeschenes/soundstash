@@ -52,6 +52,11 @@ next-env.d.ts
 prisma/*.db
 prisma/*.db-journal
 
+# docker local overrides and runtime data
+docker-compose.override.yml
+/postgres_data/
+/media_data/
+
 # additional
 .env.*
 *.env
