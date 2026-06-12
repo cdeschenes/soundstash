@@ -13,6 +13,13 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+      # Postgres' first-boot initdb can take ~30s. Without a start_period the
+      # healthcheck reaches its retry limit (~25s) and marks db unhealthy
+      # mid-init, so `depends_on: condition: service_healthy` aborts the whole
+      # `up` and tears the container down before initdb finishes — leaving a
+      # half-initialized data dir (missing database, missing pg_hba rules).
+      # The grace period lets the first init complete before checks count.
+      start_period: 60s
 
   app:
     image: ghcr.io/cdeschenes/soundstash:main
